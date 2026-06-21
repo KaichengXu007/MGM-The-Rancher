@@ -1,0 +1,38 @@
+[gd_scene load_steps=3 format=3 uid="uid://inq6fi7eigcj"]
+
+[ext_resource type="PackedScene" uid="uid://bqx7player001" path="res://player/Player.tscn" id="1_37jte"]
+[ext_resource type="PackedScene" uid="uid://c8enemy001" path="res://enemy/Enemy.tscn" id="2_enemy"]
+[ext_resource type="Script" path="res://ui/hud.gd" id="3_hud"]
+
+[node name="Node2D" type="Node2D" unique_id=1719156371]
+
+[node name="Player" parent="." unique_id=28050688 instance=ExtResource("1_37jte")]
+position = Vector2(576, 324)
+
+[node name="Enemy" parent="." unique_id=2006501506 instance=ExtResource("2_enemy")]
+position = Vector2(800, 324)
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("3_hud")
+
+[node name="EggLabel" type="Label" parent="HUD"]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 300.0
+offset_bottom = 48.0
+theme_override_font_sizes/font_size = 20
+text = "基地仓库 · 怪物蛋: 0"
+
+[node name="PickupLabel" type="Label" parent="HUD"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -120.0
+offset_top = 80.0
+offset_right = 120.0
+offset_bottom = 120.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.95, 0.9, 0.3, 1)
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1
+text = "+1 怪物蛋已入库！"

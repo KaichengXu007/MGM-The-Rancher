@@ -1,0 +1,80 @@
+[gd_scene format=3 uid="uid://cuvvor2youbtg"]
+
+[ext_resource type="Script" uid="uid://ybqitdj3atix" path="res://ui/warehouse_ui.gd" id="1_warehouse_ui"]
+[ext_resource type="PackedScene" uid="uid://c8itemslot001" path="res://ui/ItemSlot.tscn" id="2_item_slot"]
+
+[node name="WarehouseUI" type="CanvasLayer" unique_id=1193375542]
+script = ExtResource("1_warehouse_ui")
+slot_scene = ExtResource("2_item_slot")
+
+[node name="Dimmer" type="ColorRect" parent="." unique_id=608702502]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.45000002)
+
+[node name="CenterPanel" type="PanelContainer" parent="." unique_id=1903331196]
+custom_minimum_size = Vector2(1040, 560)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CenterPanel" unique_id=2126311354]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterPanel/MarginContainer" unique_id=1441126174]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="CenterPanel/MarginContainer/VBoxContainer" unique_id=2028190505]
+layout_mode = 2
+text = "仓库管理"
+
+[node name="HintLabel" type="Label" parent="CenterPanel/MarginContainer/VBoxContainer" unique_id=1465367500]
+layout_mode = 2
+text = "点击背包物品存入仓库，点击仓库物品取出到背包"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CenterPanel/MarginContainer/VBoxContainer" unique_id=1417238098]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BackpackPanel" type="VBoxContainer" parent="CenterPanel/MarginContainer/VBoxContainer/HBoxContainer" unique_id=632429169]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BackpackTitle" type="Label" parent="CenterPanel/MarginContainer/VBoxContainer/HBoxContainer/BackpackPanel" unique_id=1189146075]
+layout_mode = 2
+text = "局内背包 (10格)"
+
+[node name="BackpackGrid" type="GridContainer" parent="CenterPanel/MarginContainer/VBoxContainer/HBoxContainer/BackpackPanel" unique_id=79474695]
+layout_mode = 2
+columns = 5
+
+[node name="WarehousePanel" type="VBoxContainer" parent="CenterPanel/MarginContainer/VBoxContainer/HBoxContainer" unique_id=545882700]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="WarehouseTitle" type="Label" parent="CenterPanel/MarginContainer/VBoxContainer/HBoxContainer/WarehousePanel" unique_id=1925923978]
+layout_mode = 2
+text = "基地仓库 (100格)"
+
+[node name="WarehouseGrid" type="GridContainer" parent="CenterPanel/MarginContainer/VBoxContainer/HBoxContainer/WarehousePanel" unique_id=1579943013]
+layout_mode = 2
+columns = 10
+
+[node name="CloseButton" type="Button" parent="CenterPanel/MarginContainer/VBoxContainer" unique_id=1564701044]
+layout_mode = 2
+text = "关闭(Esc)"

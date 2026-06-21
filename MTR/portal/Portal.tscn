@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://c8portal001"]
+
+[ext_resource type="Script" uid="uid://vln78iipkaij" path="res://portal/portal.gd" id="1_portal_script"]
+[ext_resource type="Texture2D" uid="uid://oya8wpn6jmc8" path="res://icon.svg" id="2_icon"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_portal"]
+radius = 24.0
+
+[node name="Portal" type="Area2D" unique_id=858404098]
+collision_layer = 32
+collision_mask = 4
+script = ExtResource("1_portal_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1787374926]
+modulate = Color(0.5, 0.3, 1, 0.8)
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("2_icon")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1956120084]
+shape = SubResource("CircleShape2D_portal")
+
+[node name="HintLabel" type="Label" parent="."]
+offset_left = -60.0
+offset_top = -56.0
+offset_right = 60.0
+offset_bottom = -32.0
+theme_override_font_sizes/font_size = 13
+text = "按 F 传送"
+horizontal_alignment = 1

@@ -1,0 +1,43 @@
+[gd_scene load_steps=9 format=3 uid="uid://c8dungeon001"]
+
+[ext_resource type="Script" path="res://dungeon.gd" id="1_dungeon"]
+[ext_resource type="PackedScene" uid="uid://bqx7player001" path="res://player/Player.tscn" id="2_player"]
+[ext_resource type="PackedScene" uid="uid://c8enemy001" path="res://enemy/Enemy.tscn" id="3_enemy"]
+[ext_resource type="PackedScene" uid="uid://c8boss001" path="res://boss/Boss.tscn" id="4_boss"]
+[ext_resource type="PackedScene" uid="uid://c8branchdoor001" path="res://portal/BranchDoor.tscn" id="5_branch_door"]
+[ext_resource type="PackedScene" uid="uid://bjdkryugtxlcq" path="res://hud.tscn" id="6_hud"]
+[ext_resource type="PackedScene" uid="uid://c8roombounds001" path="res://environment/RoomBoundaries.tscn" id="7_bounds"]
+[ext_resource type="PackedScene" uid="uid://c8slotmachine001" path="res://events/SlotMachine.tscn" id="8_slot"]
+[ext_resource type="PackedScene" uid="uid://c8bloodaltar001" path="res://events/BloodAltar.tscn" id="9_altar"]
+
+[node name="Dungeon" type="Node2D"]
+script = ExtResource("1_dungeon")
+enemy_scene = ExtResource("3_enemy")
+boss_scene = ExtResource("4_boss")
+branch_door_scene = ExtResource("5_branch_door")
+slot_machine_scene = ExtResource("8_slot")
+blood_altar_scene = ExtResource("9_altar")
+player_spawn_position = Vector2(320, 324)
+boss_spawn_position = Vector2(820, 324)
+
+[node name="RoomBoundaries" parent="." instance=ExtResource("7_bounds")]
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(576, 324)
+
+[node name="UICanvas" type="CanvasLayer" parent="."]
+
+[node name="LevelLabel" type="Label" parent="UICanvas"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -100.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 44.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 22
+text = "1-1"
+horizontal_alignment = 2
+
+[node name="HUD" parent="." instance=ExtResource("6_hud")]

@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://c8bullet001"]
+
+[ext_resource type="Script" uid="uid://b3vqxnmihq8mt" path="res://bullet/bullet.gd" id="1_bullet_script"]
+[ext_resource type="Texture2D" uid="uid://cwkxjox6at710" path="res://PNG/Tiles/tile_360.png" id="2_337vr"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_wm1b3"]
+radius = 6.0
+
+[node name="Bullet" type="Area2D" unique_id=1116174787]
+collision_layer = 8
+collision_mask = 3
+script = ExtResource("1_bullet_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=547195549]
+scale = Vector2(0.2, 0.2)
+texture = ExtResource("2_337vr")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1505718260]
+shape = SubResource("CircleShape2D_wm1b3")
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="." unique_id=1325054209]
+rect = Rect2(-7, -7, 14, 14)

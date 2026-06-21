@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://c8dropitem001"]
+
+[ext_resource type="Script" uid="uid://bcr3g4l8nvb3q" path="res://drop_item/drop_item.gd" id="1_drop_item_script"]
+[ext_resource type="Texture2D" uid="uid://cgddc2bt6y662" path="res://PNG/Tiles/tile_12.png" id="2_go4fo"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_wm1b3"]
+
+[node name="DropItem" type="Area2D" unique_id=1391753528]
+collision_layer = 16
+collision_mask = 4
+script = ExtResource("1_drop_item_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=906206279]
+scale = Vector2(0.2, 0.2)
+texture = ExtResource("2_go4fo")
+
+[node name="NameLabel" type="Label" parent="."]
+offset_left = -32.0
+offset_top = 10.0
+offset_right = 32.0
+offset_bottom = 26.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 11
+text = "物品"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=659842280]
+shape = SubResource("CircleShape2D_wm1b3")

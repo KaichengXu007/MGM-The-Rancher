@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://c8itemslot001"]
+
+[ext_resource type="Script" uid="uid://cv4yyadsrduv3" path="res://ui/item_slot.gd" id="1_item_slot"]
+
+[node name="ItemSlot" type="PanelContainer" unique_id=1851423375]
+custom_minimum_size = Vector2(56, 56)
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_item_slot")
+
+[node name="SlotRoot" type="Control" parent="." unique_id=440882090]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="SlotRoot" unique_id=407544135]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AmountLabel" type="Label" parent="SlotRoot" unique_id=1144990521]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.906
+anchor_top = 0.88900006
+anchor_right = 0.906
+anchor_bottom = 0.88900006
+offset_left = -34.736
+offset_top = -16.784004
+offset_right = 5.264
+offset_bottom = 6.215996
+grow_horizontal = 0
+grow_vertical = 0
+horizontal_alignment = 2
+
+[node name="ClickButton" type="Button" parent="SlotRoot" unique_id=709180405]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+flat = true

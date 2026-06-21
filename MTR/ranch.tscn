@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://c8ranch001"]
+
+[ext_resource type="PackedScene" uid="uid://bqx7player001" path="res://player/Player.tscn" id="1_player"]
+[ext_resource type="PackedScene" uid="uid://c8portal001" path="res://portal/Portal.tscn" id="2_portal"]
+[ext_resource type="PackedScene" uid="uid://bjdkryugtxlcq" path="res://hud.tscn" id="3_7ykq0"]
+[ext_resource type="PackedScene" uid="uid://bfn410sb35ab5" path="res://warehouse/Warehouse.tscn" id="4_warehouse"]
+[ext_resource type="PackedScene" uid="uid://begja1o08gb5" path="res://environment/RoomBoundaries.tscn" id="5_bounds"]
+
+[node name="Ranch" type="Node2D" unique_id=1726409824]
+
+[node name="RoomBoundaries" parent="." unique_id=1616599497 instance=ExtResource("5_bounds")]
+
+[node name="Player" parent="." unique_id=28050688 instance=ExtResource("1_player")]
+position = Vector2(400, 324)
+
+[node name="Warehouse" parent="." unique_id=513000512 instance=ExtResource("4_warehouse")]
+position = Vector2(200, 324)
+
+[node name="ToDungeonPortal" parent="." unique_id=1512641676 instance=ExtResource("2_portal")]
+position = Vector2(800, 324)
+target_scene_path = "res://dungeon.tscn"
+
+[node name="HUD" parent="." unique_id=1226835467 instance=ExtResource("3_7ykq0")]

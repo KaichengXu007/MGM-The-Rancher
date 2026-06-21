@@ -1,0 +1,37 @@
+[gd_scene load_steps=4 format=3 uid="uid://c8slotmachine001"]
+
+[ext_resource type="Script" path="res://events/slot_machine.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://icon.svg" id="2_icon"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_slot"]
+radius = 36.0
+
+[node name="SlotMachine" type="Area2D"]
+collision_layer = 32
+collision_mask = 4
+script = ExtResource("1_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.55, 0.55)
+texture = ExtResource("2_icon")
+
+[node name="HintLabel" type="Label" parent="."]
+offset_left = -80.0
+offset_top = -72.0
+offset_right = 80.0
+offset_bottom = -48.0
+theme_override_font_sizes/font_size = 13
+text = "按 E 抽奖（2 金币）"
+horizontal_alignment = 1
+
+[node name="ResultLabel" type="Label" parent="."]
+offset_left = -90.0
+offset_top = 40.0
+offset_right = 90.0
+offset_bottom = 64.0
+theme_override_colors/font_color = Color(1, 0.95, 0.6, 1)
+theme_override_font_sizes/font_size = 13
+horizontal_alignment = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_slot")

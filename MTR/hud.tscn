@@ -1,0 +1,78 @@
+[gd_scene format=3 uid="uid://bjdkryugtxlcq"]
+
+[ext_resource type="Script" uid="uid://by238idg3n5wl" path="res://ui/hud.gd" id="1_37p78"]
+[ext_resource type="PackedScene" uid="uid://c62qu43vcxs3y" path="res://ui/BackpackUI.tscn" id="2_backpack_ui"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_bg"]
+bg_color = Color(0.42358288, 0.42358288, 0.42358288, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_fill"]
+bg_color = Color(0.85, 0.15, 0.15, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_armor_bg"]
+bg_color = Color(0.35, 0.35, 0.38, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_armor_fill"]
+bg_color = Color(0.78, 0.82, 0.88, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="HUD" type="CanvasLayer" unique_id=1226835467]
+script = ExtResource("1_37p78")
+backpack_ui_scene = ExtResource("2_backpack_ui")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1241285892]
+offset_right = 480.0
+offset_bottom = 72.0
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer" unique_id=838668363]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BarColumn" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="HealthBar" type="ProgressBar" parent="MarginContainer/HBoxContainer/BarColumn" unique_id=151355089]
+custom_minimum_size = Vector2(200, 24)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_health_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_health_fill")
+value = 100.0
+show_percentage = false
+
+[node name="ArmorBar" type="ProgressBar" parent="MarginContainer/HBoxContainer/BarColumn"]
+visible = false
+custom_minimum_size = Vector2(200, 18)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_armor_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_armor_fill")
+max_value = 25.0
+show_percentage = false
+
+[node name="BackpackButton" type="Button" parent="MarginContainer/HBoxContainer" unique_id=1980785671]
+custom_minimum_size = Vector2(72, 24)
+layout_mode = 2
+size_flags_vertical = 4
+text = "背包"
+
+[node name="RelicBar" type="HBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=1221648212]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 2
