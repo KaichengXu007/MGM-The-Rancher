@@ -37,6 +37,8 @@ func set_item(id: String, amount: int, icon: Texture2D) -> void:
 	_click_button.disabled = false
 
 	var display_name: String = ITEM_NAMES.get(id, id)
+	if GlobalManager.is_monster_egg_item(id):
+		display_name = id
 	_set_tooltip("%s (x%d)" % [display_name, amount])
 
 

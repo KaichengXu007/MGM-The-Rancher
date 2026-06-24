@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://c8musket001"]
+
+[ext_resource type="Script" path="res://weapons/musket.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://c8bullet001" path="res://bullet/Bullet.tscn" id="2_bullet"]
+
+[node name="Musket" type="Node2D"]
+script = ExtResource("1_script")
+bullet_scene = ExtResource("2_bullet")

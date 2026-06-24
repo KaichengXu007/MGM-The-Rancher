@@ -48,7 +48,7 @@ func refresh_relics() -> void:
 		child.queue_free()
 
 	for relic_id in GlobalManager.active_relics.keys():
-		if GlobalManager.active_relics[relic_id] <= 0:
+		if GlobalManager.get_relic_count(relic_id) <= 0:
 			continue
 		_add_relic_icon(relic_id)
 

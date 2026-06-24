@@ -5,6 +5,7 @@ extends Node2D
 @export var enemy_scene: PackedScene
 @export var boss_scene: PackedScene
 @export var branch_door_scene: PackedScene
+@export var shop_scene: PackedScene
 @export var slot_machine_scene: PackedScene
 @export var blood_altar_scene: PackedScene
 @export var player_spawn_position: Vector2 = Vector2(320, 324)
@@ -57,6 +58,7 @@ func _setup_room_content() -> void:
 			_place_player_at_spawn()
 			_spawn_boss()
 		GlobalManager.RoomType.SHOP:
+			_spawn_shop()
 			get_tree().create_timer(1.0).timeout.connect(spawn_doors)
 		GlobalManager.RoomType.EVENT:
 			_spawn_random_event()
@@ -88,6 +90,15 @@ func _spawn_boss() -> void:
 	var boss := boss_scene.instantiate()
 	boss.global_position = boss_spawn_position
 	add_child(boss)
+
+
+func _spawn_shop() -> void:
+	if shop_scene == null:
+		push_warning("Dungeon: shop_scene 未设置")
+		return
+
+	var shop := shop_scene.instantiate()
+	add_child(shop)
 
 
 func _spawn_random_event() -> void:

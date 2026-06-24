@@ -9,6 +9,7 @@ const ICON_PATHS: Dictionary = {
 
 @export var slot_scene: PackedScene
 
+@onready var _weapon_slot: TextureRect = $CenterPanel/MarginContainer/VBoxContainer/WeaponSlotPanel/WeaponSlot
 @onready var _backpack_grid: GridContainer = $CenterPanel/MarginContainer/VBoxContainer/BackpackGrid
 @onready var _close_button: Button = $CenterPanel/MarginContainer/VBoxContainer/CloseButton
 
@@ -20,9 +21,11 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	get_tree().paused = true
 
+	GlobalManager.weapon_changed.connect(_on_weapon_changed)
 	_close_button.pressed.connect(_on_close_pressed)
 	_init_slots()
 	refresh_backpack()
+	_on_weapon_changed(GlobalManager.current_weapon_id)
 
 
 func _init_slots() -> void:
@@ -34,6 +37,22 @@ func _init_slots() -> void:
 		var slot := slot_scene.instantiate()
 		_backpack_grid.add_child(slot)
 		_slots.append(slot)
+
+
+func _on_weapon_changed(weapon_id: String) -> void:
+	var weapon_data: Dictionary = GlobalManager.WEAPON_DB.get(weapon_id, {})
+	if weapon_data.is_empty():
+		_weapon_slot.texture = null
+		_weapon_slot.tooltip_text = weapon_id
+		return
+
+	var icon_path: String = weapon_data.get("icon_path", "res://icon.svg")
+	_weapon_slot.texture = load(icon_path)
+	_weapon_slot.tooltip_text = "%s\n类型: %s\n攻击力: %d" % [
+		weapon_data.get("name", weapon_id),
+		weapon_data.get("type_name", ""),
+		int(weapon_data.get("atk", 0)),
+	]
 
 
 func refresh_backpack() -> void:

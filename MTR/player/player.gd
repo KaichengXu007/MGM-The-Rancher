@@ -1,45 +1,39 @@
 extends CharacterBody2D
 
-## Top-down 2D 主角控制器（类似《以撒的结合》俯视角）。
-## 移动：move_left / move_right / move_up / move_down（建议 WASD）
-## 射击：shoot_left / shoot_right / shoot_up / shoot_down（建议方向键）
+## Top-down 2D 主角：移动 + 单武器槽，攻击委托给当前武器节点。
 
 const MAX_BACKPACK_SLOTS: int = 10
+const DEFAULT_WEAPON_PICKUP_SCENE: PackedScene = preload("res://weapons/WeaponPickup.tscn")
 
 @export var move_speed: float = 300.0
 @export var acceleration: float = 0.2
 @export var friction: float = 0.2
-@export var bullet_scene: PackedScene
-@export var fire_rate: float = 0.3
-@export var bullet_damage: int = 10
+@export var weapon_pickup_scene: PackedScene
 @export var max_health: int = 100
 @export var current_health: int = 100
 
 @onready var sprite: Sprite2D = $Sprite2D
+@onready var _weapon_holder: Marker2D = $WeaponHolder
 
 signal backpack_changed
 signal health_changed(current_hp: int, max_hp: int)
 signal armor_changed(current_armor: int, max_armor: int)
 
+var current_weapon_id: String = "musket"
+var current_weapon_type: GlobalManager.WeaponType = GlobalManager.WeaponType.RANGED
 var backpack: Dictionary = {}
 var max_armor: int = 0
 var current_armor: int = 0
 var _base_move_speed: float = 0.0
-var _base_fire_rate: float = 0.0
-var _base_bullet_damage: int = 10
-var _damage_multiplier: float = 1.0
-var _has_split_arrow: bool = false
-var _last_input_direction: Vector2 = Vector2.RIGHT
-var _fire_cooldown: float = 0.0
+var _last_aim_direction: Vector2 = Vector2.RIGHT
 var _invulnerable: bool = false
 var _regen_timer: float = 0.0
+var _equipped_weapon: Node = null
 
 
 func _ready() -> void:
 	add_to_group("player")
 	_base_move_speed = move_speed
-	_base_fire_rate = fire_rate
-	_base_bullet_damage = bullet_damage
 	backpack = GlobalManager.run_backpack.duplicate(true)
 	GlobalManager.migrate_backpack_coins(backpack)
 
@@ -53,7 +47,12 @@ func _ready() -> void:
 		max_armor = 0
 		current_armor = 0
 
-	apply_relic_effects()
+	equip_weapon(
+		GlobalManager.current_weapon_id,
+		GlobalManager.current_weapon_type,
+		Vector2.INF,
+		false
+	)
 	_sync_backpack()
 	health_changed.emit(current_health, max_health)
 	armor_changed.emit(current_armor, max_armor)
@@ -61,28 +60,12 @@ func _ready() -> void:
 
 func apply_relic_effects() -> void:
 	move_speed = _base_move_speed
-	fire_rate = _base_fire_rate
-	_damage_multiplier = 1.0
-	_has_split_arrow = false
-
-	var relics := GlobalManager.active_relics
 	var previous_max_armor := max_armor
 
-	if relics.get("haste_boot", 0) > 0:
+	if GlobalManager.relic_applies("haste_boot", current_weapon_type):
 		move_speed = _base_move_speed * 2.0
 
-	var glove_stacks: int = relics.get("boxing_glove", 0)
-	if glove_stacks > 0:
-		_damage_multiplier = 1.0 + 0.2 * glove_stacks
-
-	var dart_stacks: int = relics.get("throwing_dart", 0)
-	if dart_stacks > 0:
-		fire_rate = _base_fire_rate / (1.0 + 0.2 * dart_stacks)
-
-	if relics.get("split_arrow", 0) > 0:
-		_has_split_arrow = true
-
-	max_armor = 25 if relics.get("lock_armor", 0) > 0 else 0
+	max_armor = 25 if GlobalManager.relic_applies("lock_armor", current_weapon_type) else 0
 	if max_armor > previous_max_armor:
 		current_armor = max_armor
 	current_armor = mini(current_armor, max_armor)
@@ -90,15 +73,72 @@ func apply_relic_effects() -> void:
 	armor_changed.emit(current_armor, max_armor)
 
 
+func equip_weapon(
+	new_id: String,
+	new_type: GlobalManager.WeaponType,
+	swap_position: Vector2 = Vector2.INF,
+	drop_replaced: bool = true
+) -> void:
+	if (
+		drop_replaced
+		and current_weapon_id != ""
+		and current_weapon_id != new_id
+		and current_weapon_type != GlobalManager.WeaponType.NONE
+	):
+		var drop_pos := swap_position if swap_position != Vector2.INF else global_position
+		_drop_weapon_pickup(current_weapon_id, current_weapon_type, drop_pos)
+
+	_clear_weapon_holder()
+
+	current_weapon_id = new_id
+	current_weapon_type = new_type
+	_mount_weapon(new_id)
+
+	GlobalManager.set_current_weapon(new_id, new_type)
+
+	apply_relic_effects()
+
+
+func get_aim_direction() -> Vector2:
+	var mouse_dir: Vector2 = get_global_mouse_position() - global_position
+	if mouse_dir.length_squared() > 1.0:
+		return mouse_dir.normalized()
+	return _last_aim_direction
+
+
+func get_attack_direction() -> Vector2:
+	return get_aim_direction()
+
+
 func _physics_process(delta: float) -> void:
+	_update_facing_from_mouse()
 	_handle_movement()
-	_handle_shooting(delta)
+	_handle_attack()
 	_handle_regen(delta)
 	move_and_slide()
 
 
+func _update_facing_from_mouse() -> void:
+	var aim := get_aim_direction()
+	if aim.length_squared() < 0.001:
+		return
+
+	_last_aim_direction = aim
+	var angle := aim.angle()
+	sprite.rotation = angle
+	_weapon_holder.rotation = angle
+
+
+func _handle_attack() -> void:
+	if _equipped_weapon == null or not _equipped_weapon.has_method("attack"):
+		return
+
+	if Input.is_action_pressed("attack"):
+		_equipped_weapon.attack()
+
+
 func _handle_regen(delta: float) -> void:
-	if GlobalManager.active_relics.get("avalon", 0) <= 0:
+	if not GlobalManager.relic_applies("avalon", current_weapon_type):
 		return
 	if current_health >= max_health:
 		_regen_timer = 0.0
@@ -110,6 +150,47 @@ func _handle_regen(delta: float) -> void:
 		current_health += 1
 		_sync_run_vitals()
 		health_changed.emit(current_health, max_health)
+
+
+func _clear_weapon_holder() -> void:
+	for child in _weapon_holder.get_children():
+		child.queue_free()
+	_equipped_weapon = null
+
+
+func _mount_weapon(weapon_id: String) -> void:
+	var scene_path: String = GlobalManager.WEAPON_SCENES.get(weapon_id, "")
+	if scene_path == "":
+		push_warning("Player: 未知武器 %s" % weapon_id)
+		return
+
+	var weapon: Node = load(scene_path).instantiate()
+	_weapon_holder.add_child(weapon)
+	_equipped_weapon = weapon
+	if weapon.has_method("setup"):
+		weapon.setup(self)
+
+
+func _drop_weapon_pickup(
+	weapon_id: String,
+	weapon_type: GlobalManager.WeaponType,
+	spawn_position: Vector2
+) -> void:
+	var scene: PackedScene = weapon_pickup_scene if weapon_pickup_scene else DEFAULT_WEAPON_PICKUP_SCENE
+	var resolved_type := weapon_type
+	if resolved_type == GlobalManager.WeaponType.NONE:
+		resolved_type = GlobalManager.get_weapon_type(weapon_id)
+
+	var pickup: Area2D = scene.instantiate()
+	pickup.weapon_id = weapon_id
+	pickup.weapon_type = resolved_type
+	pickup.global_position = spawn_position + Vector2(0, 20)
+	pickup.z_index = 5
+
+	var world: Node = get_parent()
+	if world == null:
+		world = get_tree().current_scene
+	world.call_deferred("add_child", pickup)
 
 
 func add_to_backpack(item_id: String, amount: int) -> bool:
@@ -150,13 +231,13 @@ func remove_from_backpack(item_id: String, amount: int) -> bool:
 func clear_backpack() -> void:
 	backpack.clear()
 	GlobalManager.run_backpack.clear()
-	GlobalManager.run_backpack_changed.emit()
+	GlobalManager.notify_run_backpack_changed()
 	backpack_changed.emit()
 
 
 func _sync_backpack() -> void:
 	GlobalManager.run_backpack = backpack.duplicate(true)
-	GlobalManager.run_backpack_changed.emit()
+	GlobalManager.notify_run_backpack_changed()
 	backpack_changed.emit()
 
 
@@ -218,9 +299,28 @@ func apply_health_cost(amount: int) -> bool:
 	return true
 
 
+func heal(amount: int) -> void:
+	if amount <= 0:
+		return
+
+	current_health = mini(current_health + amount, max_health)
+	_sync_run_vitals()
+	health_changed.emit(current_health, max_health)
+
+
+func heal_percent(ratio: float) -> int:
+	if ratio <= 0.0:
+		return 0
+
+	var amount := roundi(max_health * ratio)
+	heal(amount)
+	return amount
+
+
 func _die() -> void:
 	print("Player Died")
 	GlobalManager.clear_run_relics()
+	GlobalManager.reset_ranch_weapon()
 	clear_backpack()
 	get_tree().call_deferred("change_scene_to_file", "res://ranch.tscn")
 
@@ -231,69 +331,7 @@ func _handle_movement() -> void:
 	)
 
 	if input_direction != Vector2.ZERO:
-		_last_input_direction = input_direction
 		var target_velocity := input_direction * move_speed
 		velocity = velocity.lerp(target_velocity, acceleration)
 	else:
 		velocity = velocity.lerp(Vector2.ZERO, friction)
-
-	var facing := input_direction
-	if facing == Vector2.ZERO and velocity.length_squared() > 1.0:
-		facing = velocity.normalized()
-	elif facing == Vector2.ZERO:
-		facing = _last_input_direction
-
-	_update_facing(facing)
-
-
-func _handle_shooting(delta: float) -> void:
-	_fire_cooldown = maxf(_fire_cooldown - delta, 0.0)
-
-	if _fire_cooldown > 0.0 or bullet_scene == null:
-		return
-
-	var shoot_direction := _get_shoot_direction()
-	if shoot_direction == Vector2.ZERO:
-		return
-
-	_fire_bullet(shoot_direction)
-
-
-func _get_shoot_direction() -> Vector2:
-	if Input.is_action_pressed("shoot_up"):
-		return Vector2.UP
-	if Input.is_action_pressed("shoot_down"):
-		return Vector2.DOWN
-	if Input.is_action_pressed("shoot_left"):
-		return Vector2.LEFT
-	if Input.is_action_pressed("shoot_right"):
-		return Vector2.RIGHT
-	return Vector2.ZERO
-
-
-func _fire_bullet(direction: Vector2) -> void:
-	var directions: Array[Vector2] = [direction]
-	if _has_split_arrow:
-		var spread := deg_to_rad(18.0)
-		directions = [
-			direction,
-			direction.rotated(spread),
-			direction.rotated(-spread),
-		]
-
-	for shoot_dir in directions:
-		_spawn_bullet(shoot_dir)
-	_fire_cooldown = fire_rate
-
-
-func _spawn_bullet(direction: Vector2) -> void:
-	var bullet := bullet_scene.instantiate()
-	bullet.direction = direction
-	bullet.damage = maxi(1, int(round(_base_bullet_damage * _damage_multiplier)))
-	bullet.global_position = global_position
-	get_tree().current_scene.add_child(bullet)
-
-
-func _update_facing(direction: Vector2) -> void:
-	if absf(direction.x) > 0.001:
-		sprite.flip_h = direction.x < 0.0

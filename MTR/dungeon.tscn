@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://c8dungeon001"]
+[gd_scene load_steps=10 format=3 uid="uid://c8dungeon001"]
 
 [ext_resource type="Script" path="res://dungeon.gd" id="1_dungeon"]
 [ext_resource type="PackedScene" uid="uid://bqx7player001" path="res://player/Player.tscn" id="2_player"]
@@ -9,12 +9,14 @@
 [ext_resource type="PackedScene" uid="uid://c8roombounds001" path="res://environment/RoomBoundaries.tscn" id="7_bounds"]
 [ext_resource type="PackedScene" uid="uid://c8slotmachine001" path="res://events/SlotMachine.tscn" id="8_slot"]
 [ext_resource type="PackedScene" uid="uid://c8bloodaltar001" path="res://events/BloodAltar.tscn" id="9_altar"]
+[ext_resource type="PackedScene" uid="uid://c8shop001" path="res://shop/Shop.tscn" id="10_shop"]
 
 [node name="Dungeon" type="Node2D"]
 script = ExtResource("1_dungeon")
 enemy_scene = ExtResource("3_enemy")
 boss_scene = ExtResource("4_boss")
 branch_door_scene = ExtResource("5_branch_door")
+shop_scene = ExtResource("10_shop")
 slot_machine_scene = ExtResource("8_slot")
 blood_altar_scene = ExtResource("9_altar")
 player_spawn_position = Vector2(320, 324)

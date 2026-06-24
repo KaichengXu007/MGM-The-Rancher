@@ -83,6 +83,7 @@ func _travel() -> void:
 
 	if is_run_complete:
 		GlobalManager.clear_run_relics()
+		GlobalManager.reset_ranch_weapon()
 		get_tree().call_deferred("change_scene_to_file", "res://ranch.tscn")
 	else:
 		get_tree().call_deferred("reload_current_scene")

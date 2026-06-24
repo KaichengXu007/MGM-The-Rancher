@@ -1,0 +1,99 @@
+[gd_scene load_steps=8 format=3 uid="uid://c8rancharea001"]
+
+[ext_resource type="Script" path="res://ranch/ranch_area.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://c8friendlymonster001" path="res://ranch/FriendlyMonster.tscn" id="2_friendly"]
+[ext_resource type="Texture2D" path="res://icon.svg" id="3_icon"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_interact"]
+size = Vector2(300, 200)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_farm"]
+size = Vector2(280, 160)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall_h"]
+size = Vector2(280, 16)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall_v"]
+size = Vector2(16, 160)
+
+[node name="RanchArea" type="Area2D"]
+collision_layer = 32
+collision_mask = 4
+script = ExtResource("1_script")
+friendly_monster_scene = ExtResource("2_friendly")
+
+[node name="FarmBounds" type="Node2D" parent="."]
+position = Vector2(0, 10)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FarmBounds"]
+shape = SubResource("RectangleShape2D_farm")
+
+[node name="FenceTop" type="StaticBody2D" parent="FarmBounds"]
+position = Vector2(0, -80)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FarmBounds/FenceTop"]
+shape = SubResource("RectangleShape2D_wall_h")
+
+[node name="FenceBottom" type="StaticBody2D" parent="FarmBounds"]
+position = Vector2(0, 80)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FarmBounds/FenceBottom"]
+shape = SubResource("RectangleShape2D_wall_h")
+
+[node name="FenceLeft" type="StaticBody2D" parent="FarmBounds"]
+position = Vector2(-140, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FarmBounds/FenceLeft"]
+shape = SubResource("RectangleShape2D_wall_v")
+
+[node name="FenceRight" type="StaticBody2D" parent="FarmBounds"]
+position = Vector2(140, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FarmBounds/FenceRight"]
+shape = SubResource("RectangleShape2D_wall_v")
+
+[node name="Nests" type="Node2D" parent="."]
+
+[node name="Nest1" type="Sprite2D" parent="Nests"]
+position = Vector2(-100, 50)
+scale = Vector2(0.22, 0.22)
+modulate = Color(0.55, 0.45, 0.35, 0.55)
+texture = ExtResource("3_icon")
+
+[node name="Nest2" type="Sprite2D" parent="Nests"]
+position = Vector2(-50, 50)
+scale = Vector2(0.22, 0.22)
+modulate = Color(0.55, 0.45, 0.35, 0.55)
+texture = ExtResource("3_icon")
+
+[node name="Nest3" type="Sprite2D" parent="Nests"]
+position = Vector2(0, 50)
+scale = Vector2(0.22, 0.22)
+modulate = Color(0.55, 0.45, 0.35, 0.55)
+texture = ExtResource("3_icon")
+
+[node name="Nest4" type="Sprite2D" parent="Nests"]
+position = Vector2(50, 50)
+scale = Vector2(0.22, 0.22)
+modulate = Color(0.55, 0.45, 0.35, 0.55)
+texture = ExtResource("3_icon")
+
+[node name="Nest5" type="Sprite2D" parent="Nests"]
+position = Vector2(100, 50)
+scale = Vector2(0.22, 0.22)
+modulate = Color(0.55, 0.45, 0.35, 0.55)
+texture = ExtResource("3_icon")
+
+[node name="Monsters" type="Node2D" parent="."]
+
+[node name="HintLabel" type="Label" parent="."]
+offset_left = -120.0
+offset_top = -110.0
+offset_right = 120.0
+offset_bottom = -86.0
+theme_override_font_sizes/font_size = 13
+text = "按 F 孵蛋 | 按 E 收获"
+horizontal_alignment = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_interact")

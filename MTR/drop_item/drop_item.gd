@@ -21,17 +21,20 @@ func _ready() -> void:
 
 
 func _apply_visual() -> void:
-	match item_id:
-		"egg":
-			sprite.modulate = Color(0.9, 0.95, 0.3)
-		"coin_small":
-			sprite.modulate = Color(1.0, 0.85, 0.2)
-		"coin_large":
-			sprite.modulate = Color(1.0, 0.6, 0.1)
-		_:
-			sprite.modulate = Color.WHITE
+	if GlobalManager.is_monster_egg_item(item_id):
+		sprite.modulate = Color(0.9, 0.95, 0.35)
+	elif item_id == "egg":
+		sprite.modulate = Color(0.9, 0.95, 0.3)
+	elif item_id == "coin_small":
+		sprite.modulate = Color(1.0, 0.85, 0.2)
+	elif item_id == "coin_large":
+		sprite.modulate = Color(1.0, 0.6, 0.1)
+	else:
+		sprite.modulate = Color.WHITE
 
 	var display_name: String = ITEM_NAMES.get(item_id, item_id)
+	if GlobalManager.is_monster_egg_item(item_id):
+		display_name = item_id
 	if amount > 1:
 		_name_label.text = "%s x%d" % [display_name, amount]
 	else:

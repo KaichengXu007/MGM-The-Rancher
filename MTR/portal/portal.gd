@@ -47,5 +47,6 @@ func _teleport() -> void:
 		GlobalManager.reset_run()
 	elif target_scene_path == "res://ranch.tscn":
 		GlobalManager.clear_run_relics()
+		GlobalManager.reset_ranch_weapon()
 
 	get_tree().call_deferred("change_scene_to_file", target_scene_path)

@@ -1,20 +1,30 @@
-[gd_scene format=3 uid="uid://c8ranch001"]
+[gd_scene load_steps=7 format=3 uid="uid://c8ranch001"]
 
 [ext_resource type="PackedScene" uid="uid://bqx7player001" path="res://player/Player.tscn" id="1_player"]
 [ext_resource type="PackedScene" uid="uid://c8portal001" path="res://portal/Portal.tscn" id="2_portal"]
 [ext_resource type="PackedScene" uid="uid://bjdkryugtxlcq" path="res://hud.tscn" id="3_7ykq0"]
 [ext_resource type="PackedScene" uid="uid://bfn410sb35ab5" path="res://warehouse/Warehouse.tscn" id="4_warehouse"]
 [ext_resource type="PackedScene" uid="uid://begja1o08gb5" path="res://environment/RoomBoundaries.tscn" id="5_bounds"]
+[ext_resource type="PackedScene" uid="uid://c8weaponpickup001" path="res://weapons/WeaponPickup.tscn" id="6_katana_pickup"]
+[ext_resource type="PackedScene" uid="uid://c8rancharea001" path="res://ranch/RanchArea.tscn" id="7_ranch_area"]
 
 [node name="Ranch" type="Node2D" unique_id=1726409824]
 
 [node name="RoomBoundaries" parent="." unique_id=1616599497 instance=ExtResource("5_bounds")]
+
+[node name="RanchArea" parent="." instance=ExtResource("7_ranch_area")]
+position = Vector2(928, 170)
 
 [node name="Player" parent="." unique_id=28050688 instance=ExtResource("1_player")]
 position = Vector2(400, 324)
 
 [node name="Warehouse" parent="." unique_id=513000512 instance=ExtResource("4_warehouse")]
 position = Vector2(200, 324)
+
+[node name="KatanaPickup" parent="." instance=ExtResource("6_katana_pickup")]
+position = Vector2(550, 324)
+weapon_id = "katana"
+weapon_type = 1
 
 [node name="ToDungeonPortal" parent="." unique_id=1512641676 instance=ExtResource("2_portal")]
 position = Vector2(800, 324)

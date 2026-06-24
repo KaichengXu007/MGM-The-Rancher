@@ -1,0 +1,25 @@
+[gd_scene load_steps=4 format=3 uid="uid://c8katana001"]
+
+[ext_resource type="Script" path="res://weapons/katana.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://icon.svg" id="2_icon"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_slash"]
+size = Vector2(48, 20)
+
+[node name="Katana" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="SlashSprite" type="Sprite2D" parent="."]
+modulate = Color(0.85, 0.9, 1, 0.25)
+scale = Vector2(0.9, 0.22)
+texture = ExtResource("2_icon")
+
+[node name="Hitbox" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+shape = SubResource("RectangleShape2D_slash")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]

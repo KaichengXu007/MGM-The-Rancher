@@ -11,8 +11,11 @@ const DEFAULT_RELIC_SCENE: PackedScene = preload("res://relic/Relic.tscn")
 @export var damage: int = 20
 @export var attack_range: float = 36.0
 @export var spawn_attack_delay: float = 1.5
+@export var monster_id: int = 2
 @export var relic_scene: PackedScene
 @export var drop_item_scene: PackedScene
+
+const MONSTER_EGG_DROP_CHANCE: float = 0.20
 
 @onready var sprite: Sprite2D = $Sprite2D
 
@@ -102,4 +105,22 @@ func die() -> void:
 	var death_position := global_position
 	_spawn_relic(death_position)
 	_spawn_coin_large(death_position)
+	_try_spawn_monster_egg(death_position)
 	queue_free()
+
+
+func _try_spawn_monster_egg(at_position: Vector2) -> void:
+	if drop_item_scene == null:
+		return
+	if randf() >= MONSTER_EGG_DROP_CHANCE:
+		return
+
+	var egg_id := GlobalManager.get_egg_item_id(monster_id)
+	if egg_id == "":
+		return
+
+	var drop_item := drop_item_scene.instantiate()
+	drop_item.item_id = egg_id
+	drop_item.amount = 1
+	drop_item.global_position = at_position + Vector2(-16, 0)
+	get_tree().current_scene.call_deferred("add_child", drop_item)

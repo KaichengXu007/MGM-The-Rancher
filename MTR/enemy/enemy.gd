@@ -1,15 +1,15 @@
 extends CharacterBody2D
 
 ## 基础追踪怪物：加入 "enemy" 分组，朝 "player" 分组中的节点移动。
-## 伤害通过距离判定，不与玩家发生物理推挤（避免黏住玩家）。
 
 @export var health: int = 30
 @export var speed: float = 150.0
 @export var damage: int = 10
 @export var attack_range: float = 28.0
+@export var monster_id: int = 1
 @export var drop_item_scene: PackedScene
 
-const BASE_EGG_DROP_CHANCE: float = 0.30
+const MONSTER_EGG_DROP_CHANCE: float = 0.20
 const BASE_COIN_DROP_CHANCE: float = 0.50
 const BASE_COIN_LARGE_DROP_CHANCE: float = 0.10
 const DROP_SPREAD_RADIUS: float = 12.0
@@ -64,20 +64,22 @@ func _spawn_drop() -> void:
 		return
 
 	var drops: Array[String] = []
-	if _roll_drop(_get_egg_drop_chance()):
-		drops.append("egg")
+	if _roll_drop(_get_monster_egg_drop_chance()):
+		drops.append(GlobalManager.get_egg_item_id(monster_id))
 	if _roll_drop(BASE_COIN_DROP_CHANCE):
 		drops.append("coin_small")
 	if _roll_drop(BASE_COIN_LARGE_DROP_CHANCE):
 		drops.append("coin_large")
 
 	for i in drops.size():
+		if drops[i] == "":
+			continue
 		_spawn_drop_item(drops[i], i)
 
 
-func _get_egg_drop_chance() -> float:
-	var chance := BASE_EGG_DROP_CHANCE
-	if GlobalManager.active_relics.get("spirit_ball", 0) > 0:
+func _get_monster_egg_drop_chance() -> float:
+	var chance := MONSTER_EGG_DROP_CHANCE
+	if GlobalManager.get_relic_count("spirit_ball") > 0:
 		chance += 0.25
 	return chance
 

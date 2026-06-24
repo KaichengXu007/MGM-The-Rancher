@@ -1,0 +1,27 @@
+[gd_scene load_steps=4 format=3 uid="uid://c8friendlymonster001"]
+
+[ext_resource type="Script" path="res://ranch/friendly_monster.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://PNG/Robot 1/robot1_hold.png" id="2_tex"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_friendly"]
+radius = 14.0
+
+[node name="FriendlyMonster" type="CharacterBody2D"]
+collision_layer = 0
+collision_mask = 0
+script = ExtResource("1_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.45, 0.45)
+texture = ExtResource("2_tex")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_friendly")
+
+[node name="ProduceTimer" type="Timer" parent="."]
+one_shot = false
+autostart = false
+
+[node name="RoamTimer" type="Timer" parent="."]
+one_shot = true
+autostart = false
