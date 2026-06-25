@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://c8ranch001"]
+[gd_scene load_steps=9 format=3 uid="uid://c8ranch001"]
 
 [ext_resource type="PackedScene" uid="uid://bqx7player001" path="res://player/Player.tscn" id="1_player"]
 [ext_resource type="PackedScene" uid="uid://c8portal001" path="res://portal/Portal.tscn" id="2_portal"]
@@ -7,6 +7,8 @@
 [ext_resource type="PackedScene" uid="uid://begja1o08gb5" path="res://environment/RoomBoundaries.tscn" id="5_bounds"]
 [ext_resource type="PackedScene" uid="uid://c8weaponpickup001" path="res://weapons/WeaponPickup.tscn" id="6_katana_pickup"]
 [ext_resource type="PackedScene" uid="uid://c8rancharea001" path="res://ranch/RanchArea.tscn" id="7_ranch_area"]
+[ext_resource type="PackedScene" uid="uid://c8talentterminal001" path="res://talent/TalentTerminal.tscn" id="8_talent_terminal"]
+[ext_resource type="PackedScene" uid="uid://c8coinmodifier001" path="res://ranch/CoinModifier.tscn" id="9_coin_modifier"]
 
 [node name="Ranch" type="Node2D" unique_id=1726409824]
 
@@ -14,6 +16,12 @@
 
 [node name="RanchArea" parent="." instance=ExtResource("7_ranch_area")]
 position = Vector2(928, 170)
+
+[node name="TalentTerminal" parent="." instance=ExtResource("8_talent_terminal")]
+position = Vector2(576, 180)
+
+[node name="CoinModifier" parent="." instance=ExtResource("9_coin_modifier")]
+position = Vector2(576, 420)
 
 [node name="Player" parent="." unique_id=28050688 instance=ExtResource("1_player")]
 position = Vector2(400, 324)

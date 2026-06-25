@@ -7,6 +7,8 @@ extends Node2D
 @export var slash_duration: float = 0.22
 @export var hitbox_offset: float = 40.0
 
+var knockback_coefficient: float = 0.3
+
 @onready var _hitbox: Area2D = $Hitbox
 @onready var _animation_player: AnimationPlayer = $AnimationPlayer
 @onready var _slash_sprite: Sprite2D = $SlashSprite
@@ -99,8 +101,12 @@ func _on_hitbox_body_entered(body: Node2D) -> void:
 		return
 
 	_hit_targets[body.get_instance_id()] = true
-	if body.has_method("take_damage"):
-		body.take_damage(_get_effective_damage(_current_damage_mult))
+	if body.has_method("take_damage") and _player != null:
+		body.take_damage(
+			_get_effective_damage(_current_damage_mult),
+			knockback_coefficient,
+			_player.global_position
+		)
 
 
 func _build_animations() -> void:

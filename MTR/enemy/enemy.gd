@@ -6,13 +6,20 @@ extends CharacterBody2D
 @export var speed: float = 150.0
 @export var damage: int = 10
 @export var attack_range: float = 28.0
+@export var knockback_resistance: float = 0.1
 @export var monster_id: int = 1
 @export var drop_item_scene: PackedScene
+@export var damage_text_scene: PackedScene
 
 const MONSTER_EGG_DROP_CHANCE: float = 0.20
 const BASE_COIN_DROP_CHANCE: float = 0.50
 const BASE_COIN_LARGE_DROP_CHANCE: float = 0.10
 const DROP_SPREAD_RADIUS: float = 12.0
+const KNOCKBACK_BASE_FORCE: float = 800.0
+const KNOCKBACK_STOP_THRESHOLD: float = 10.0
+const KNOCKBACK_DECAY: float = 2000.0
+
+var knockback_velocity: Vector2 = Vector2.ZERO
 
 @onready var sprite: Sprite2D = $Sprite2D
 
@@ -21,7 +28,10 @@ func _ready() -> void:
 	add_to_group("enemy")
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
+	if _process_knockback(delta):
+		return
+
 	var player := get_tree().get_first_node_in_group("player") as Node2D
 	if player == null:
 		velocity = Vector2.ZERO
@@ -41,8 +51,10 @@ func _physics_process(_delta: float) -> void:
 	move_and_slide()
 
 
-func take_damage(amount: int) -> void:
+func take_damage(amount: int, weapon_knockback: float, attacker_pos: Vector2) -> void:
 	health -= amount
+	_apply_knockback(weapon_knockback, attacker_pos)
+	_spawn_damage_text(amount)
 
 	sprite.modulate = Color.RED
 	await get_tree().create_timer(0.1).timeout
@@ -52,6 +64,31 @@ func take_damage(amount: int) -> void:
 
 	if health <= 0:
 		_die()
+
+
+func _apply_knockback(weapon_knockback: float, attacker_pos: Vector2) -> void:
+	if weapon_knockback <= knockback_resistance:
+		return
+
+	var force_factor: float = weapon_knockback - knockback_resistance
+	var knockback_dir: Vector2 = global_position - attacker_pos
+	if knockback_dir.length_squared() < 0.001:
+		knockback_dir = Vector2.RIGHT
+	else:
+		knockback_dir = knockback_dir.normalized()
+
+	knockback_velocity = knockback_dir * force_factor * KNOCKBACK_BASE_FORCE
+
+
+func _process_knockback(delta: float) -> bool:
+	if knockback_velocity.length() <= KNOCKBACK_STOP_THRESHOLD:
+		knockback_velocity = Vector2.ZERO
+		return false
+
+	velocity = knockback_velocity
+	move_and_slide()
+	knockback_velocity = knockback_velocity.move_toward(Vector2.ZERO, KNOCKBACK_DECAY * delta)
+	return true
 
 
 func _die() -> void:
@@ -96,3 +133,18 @@ func _spawn_drop_item(item_id: String, index: int) -> void:
 	var angle := index * TAU / 6.0
 	drop_item.global_position = global_position + Vector2(cos(angle), sin(angle)) * DROP_SPREAD_RADIUS
 	get_tree().current_scene.add_child(drop_item)
+
+
+func _spawn_damage_text(amount: int) -> void:
+	if damage_text_scene == null:
+		return
+
+	var damage_text: Node2D = damage_text_scene.instantiate()
+	damage_text.setup(amount)
+	damage_text.global_position = global_position + Vector2(0, -24)
+
+	var world := get_tree().current_scene
+	if world == null:
+		damage_text.queue_free()
+		return
+	world.add_child(damage_text)

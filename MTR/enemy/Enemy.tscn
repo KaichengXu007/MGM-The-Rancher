@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://htqu1mwjf2j5" path="res://enemy/enemy.gd" id="1_enemy_script"]
 [ext_resource type="Texture2D" uid="uid://xo460sx0fcai" path="res://PNG/Robot 1/robot1_hold.png" id="3_5p6bu"]
 [ext_resource type="PackedScene" uid="uid://c8dropitem001" path="res://drop_item/DropItem.tscn" id="3_drop_item"]
+[ext_resource type="PackedScene" uid="uid://c8damagetext001" path="res://effects/DamageText.tscn" id="4_damage_text"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy"]
 size = Vector2(28, 28)
@@ -12,6 +13,7 @@ collision_layer = 2
 collision_mask = 1
 script = ExtResource("1_enemy_script")
 drop_item_scene = ExtResource("3_drop_item")
+damage_text_scene = ExtResource("4_damage_text")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=868113964]
 modulate = Color(0.99215686, 0.39215687, 0.39215687, 1)

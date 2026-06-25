@@ -9,6 +9,10 @@ enum RelicScope { GLOBAL, MELEE, RANGED }
 const MAX_WAREHOUSE_SLOTS: int = 100
 const DEFAULT_RUN_MAX_HEALTH: int = 100
 const GOLD_ITEM_ID: String = "gold"
+const SAVE_PATH: String = "user://mtr_save.dat"
+const ENCRYPTION_KEY: String = "MTR_Secret_2026"
+const PAUSE_MENU_SCENE: PackedScene = preload("res://ui/PauseMenu.tscn")
+const MAIN_MENU_SCENE_PATH: String = "res://MainMenu.tscn"
 
 const COIN_PICKUP_VALUES: Dictionary = {
 	"coin_small": 1,
@@ -117,6 +121,31 @@ signal relics_changed
 signal weapon_changed(new_weapon_id: String)
 signal egg_hatched(monster_id: int)
 signal incubation_changed
+signal talent_upgraded(talent_id: String)
+
+const TALENT_DB: Dictionary = {
+	"hp_up": {
+		"name": "体能特训",
+		"desc": "初始最大生命值 +10",
+		"max_level": 5,
+		"base_cost": 50,
+		"cost_multiplier": 1.5,
+	},
+	"atk_up": {
+		"name": "力量强化",
+		"desc": "所有武器基础攻击力 +2",
+		"max_level": 5,
+		"base_cost": 80,
+		"cost_multiplier": 1.5,
+	},
+	"speed_up": {
+		"name": "迅捷步伐",
+		"desc": "基础移动速度 +5%",
+		"max_level": 3,
+		"base_cost": 100,
+		"cost_multiplier": 2.0,
+	},
+}
 
 var base_warehouse: Dictionary = {}
 var run_backpack: Dictionary = {}
@@ -138,10 +167,72 @@ var active_relics: Dictionary = {}
 
 var incubating_eggs: Array = []
 var hatched_monsters: Array = []
+var unlocked_talents: Dictionary = {
+	"hp_up": 0,
+	"atk_up": 0,
+	"speed_up": 0,
+}
+var is_paused: bool = false
 
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	set_process(true)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not event.is_action_pressed("ui_cancel"):
+		return
+
+	var current_scene := get_tree().current_scene
+	if current_scene == null or current_scene.name == "MainMenu":
+		return
+	if _has_blocking_ui():
+		return
+	if _is_pause_menu_open():
+		return
+	if get_tree().paused:
+		return
+
+	open_pause_menu()
+
+
+func open_pause_menu() -> void:
+	if _is_pause_menu_open():
+		return
+
+	var menu: CanvasLayer = PAUSE_MENU_SCENE.instantiate()
+	menu.name = "PauseMenu"
+	get_tree().root.add_child(menu)
+	get_tree().paused = true
+	is_paused = true
+	menu.tree_exited.connect(_on_pause_menu_closed)
+
+
+func _on_pause_menu_closed() -> void:
+	is_paused = false
+
+
+func _is_pause_menu_open() -> bool:
+	return get_tree().root.get_node_or_null("PauseMenu") != null
+
+
+func _has_blocking_ui() -> bool:
+	for child in get_tree().root.get_children():
+		if child.name in ["BackpackUI", "TalentUI", "WarehouseUI"]:
+			return true
+	return false
+
+
+func reset_to_default_state() -> void:
+	_init_default_save_data()
+	reset_run()
+	reset_ranch_weapon()
+	run_backpack.clear()
+	clear_run_relics()
+	is_paused = false
+	notify_run_backpack_changed()
+	warehouse_updated.emit()
 
 
 func _process(delta: float) -> void:
@@ -164,6 +255,125 @@ func _tick_incubation(delta: float) -> void:
 
 	if changed:
 		incubation_changed.emit()
+		save_game()
+
+
+func save_game() -> void:
+	var save_data: Dictionary = {
+		"total_coins": get_warehouse_gold(),
+		"unlocked_talents": unlocked_talents.duplicate(true),
+		"base_warehouse": base_warehouse.duplicate(true),
+		"hatched_monsters": hatched_monsters.duplicate(true),
+		"incubating_eggs": incubating_eggs.duplicate(true),
+	}
+
+	var file := FileAccess.open_encrypted_with_pass(SAVE_PATH, FileAccess.WRITE, ENCRYPTION_KEY)
+	if file == null:
+		push_error("[存档] 写入失败: %s" % FileAccess.get_open_error())
+		return
+
+	file.store_string(var_to_str(save_data))
+	file.close()
+	print("[存档] 游戏数据已安全加密保存。")
+
+
+func load_game() -> bool:
+	if not FileAccess.file_exists(SAVE_PATH):
+		print("未找到存档，启动全新游戏")
+		return false
+
+	var file := FileAccess.open_encrypted_with_pass(SAVE_PATH, FileAccess.READ, ENCRYPTION_KEY)
+	if file == null:
+		push_error("[读档] 打开失败: %s" % FileAccess.get_open_error())
+		return false
+
+	var content := file.get_as_text()
+	file.close()
+	if content.is_empty():
+		push_error("[读档] 存档内容为空")
+		return false
+
+	var parsed: Variant = str_to_var(content)
+	if typeof(parsed) != TYPE_DICTIONARY:
+		push_error("[读档] 存档格式无效")
+		return false
+
+	_apply_save_data(parsed)
+	print("[读档] 成功加载本地加密存档。")
+	return true
+
+
+func _init_default_save_data() -> void:
+	base_warehouse.clear()
+	unlocked_talents = {
+		"hp_up": 0,
+		"atk_up": 0,
+		"speed_up": 0,
+	}
+	hatched_monsters.clear()
+	incubating_eggs.clear()
+
+
+func _apply_save_data(save_data: Dictionary) -> void:
+	if save_data.has("base_warehouse") and save_data["base_warehouse"] is Dictionary:
+		base_warehouse = save_data["base_warehouse"].duplicate(true)
+	else:
+		base_warehouse.clear()
+
+	if save_data.has("total_coins"):
+		var saved_gold: int = int(save_data["total_coins"])
+		if saved_gold > 0 and get_warehouse_gold() <= 0:
+			base_warehouse[GOLD_ITEM_ID] = saved_gold
+
+	_apply_unlocked_talents(save_data.get("unlocked_talents", {}))
+	hatched_monsters = _sanitize_monster_id_array(save_data.get("hatched_monsters", []))
+	incubating_eggs = _sanitize_incubating_eggs(save_data.get("incubating_eggs", []))
+	normalize_warehouse_coins()
+	warehouse_updated.emit()
+
+
+func _apply_unlocked_talents(raw_talents: Variant) -> void:
+	unlocked_talents = {
+		"hp_up": 0,
+		"atk_up": 0,
+		"speed_up": 0,
+	}
+	if raw_talents is Dictionary:
+		for talent_id in TALENT_DB.keys():
+			if raw_talents.has(talent_id):
+				unlocked_talents[talent_id] = int(raw_talents[talent_id])
+
+
+func _sanitize_monster_id_array(raw_value: Variant) -> Array:
+	var result: Array = []
+	if raw_value is Array:
+		for entry in raw_value:
+			result.append(int(entry))
+	return result
+
+
+func _sanitize_incubating_eggs(raw_value: Variant) -> Array:
+	var result: Array = []
+	if not raw_value is Array:
+		return result
+
+	for entry in raw_value:
+		if entry is Dictionary:
+			result.append({
+				"id": int(entry.get("id", 0)),
+				"time_left": float(entry.get("time_left", 0.0)),
+			})
+	return result
+
+
+func return_to_ranch_and_save(player: Node = null) -> void:
+	deposit_player_items_to_warehouse(player)
+	save_game()
+
+
+func manual_save(player: Node = null) -> void:
+	deposit_player_items_to_warehouse(player)
+	save_game()
 
 
 func get_egg_item_id(monster_id: int) -> String:
@@ -222,11 +432,102 @@ func reset_run() -> void:
 	current_act = 1
 	current_room = 1
 	next_room_type = RoomType.COMBAT
-	run_max_health = DEFAULT_RUN_MAX_HEALTH
-	run_current_health = DEFAULT_RUN_MAX_HEALTH
+	run_max_health = get_talent_max_health()
+	run_current_health = run_max_health
 	run_max_armor = 0
 	run_current_armor = 0
 	clear_run_relics()
+
+
+func get_talent_max_health() -> int:
+	return DEFAULT_RUN_MAX_HEALTH + unlocked_talents.get("hp_up", 0) * 10
+
+
+func get_talent_attack_bonus() -> int:
+	return unlocked_talents.get("atk_up", 0) * 2
+
+
+func get_talent_speed_multiplier() -> float:
+	return 1.0 + unlocked_talents.get("speed_up", 0) * 0.05
+
+
+func get_talent_level(talent_id: String) -> int:
+	return int(unlocked_talents.get(talent_id, 0))
+
+
+func is_talent_maxed(talent_id: String) -> bool:
+	if not TALENT_DB.has(talent_id):
+		return true
+	return get_talent_level(talent_id) >= int(TALENT_DB[talent_id].get("max_level", 0))
+
+
+func get_talent_cost(talent_id: String) -> int:
+	if not TALENT_DB.has(talent_id):
+		return 0
+
+	var info: Dictionary = TALENT_DB[talent_id]
+	var level := get_talent_level(talent_id)
+	if level >= int(info.get("max_level", 0)):
+		return 0
+
+	var base_cost: float = float(info.get("base_cost", 0))
+	var multiplier: float = float(info.get("cost_multiplier", 1.0))
+	return int(floor(base_cost * pow(multiplier, level)))
+
+
+func get_warehouse_gold() -> int:
+	return int(base_warehouse.get(GOLD_ITEM_ID, 0))
+
+
+func add_warehouse_gold(amount: int) -> bool:
+	if amount <= 0:
+		return false
+	return add_to_warehouse(GOLD_ITEM_ID, amount)
+
+
+func remove_warehouse_gold(amount: int) -> bool:
+	if amount <= 0:
+		return false
+	return remove_from_warehouse(GOLD_ITEM_ID, amount)
+
+
+func deposit_player_items_to_warehouse(player: Node = null) -> void:
+	if player != null and player.has_method("remove_from_backpack"):
+		var backpack_gold: int = int(player.backpack.get(GOLD_ITEM_ID, 0))
+		if backpack_gold > 0 and player.remove_from_backpack(GOLD_ITEM_ID, backpack_gold):
+			add_warehouse_gold(backpack_gold)
+	normalize_warehouse_coins()
+
+
+func normalize_warehouse_coins() -> void:
+	var gold_to_add := 0
+	for coin_id in COIN_PICKUP_VALUES.keys():
+		if not base_warehouse.has(coin_id):
+			continue
+		gold_to_add += base_warehouse[coin_id] * COIN_PICKUP_VALUES[coin_id]
+		base_warehouse.erase(coin_id)
+
+	if gold_to_add > 0:
+		base_warehouse[GOLD_ITEM_ID] = base_warehouse.get(GOLD_ITEM_ID, 0) + gold_to_add
+		warehouse_updated.emit()
+
+
+func upgrade_talent(talent_id: String) -> bool:
+	if not TALENT_DB.has(talent_id):
+		return false
+	if is_talent_maxed(talent_id):
+		return false
+
+	var cost := get_talent_cost(talent_id)
+	if get_warehouse_gold() < cost:
+		return false
+	if not remove_warehouse_gold(cost):
+		return false
+
+	unlocked_talents[talent_id] = get_talent_level(talent_id) + 1
+	talent_upgraded.emit(talent_id)
+	save_game()
+	return true
 
 
 func get_current_level_name() -> String:

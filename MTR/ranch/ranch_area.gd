@@ -71,6 +71,7 @@ func _try_incubate_egg() -> void:
 	var egg_name: String = GlobalManager.get_egg_item_id(monster_id)
 	_show_float_text("开始孵化：%s" % egg_name)
 	_refresh_nests()
+	GlobalManager.save_game()
 
 
 func _harvest_all_monsters() -> void:
@@ -99,6 +100,8 @@ func _harvest_all_monsters() -> void:
 		total_coins += count
 
 	_show_float_text("收获 %d 个硬币" % total_coins)
+	GlobalManager.normalize_warehouse_coins()
+	GlobalManager.save_game()
 
 
 func _on_egg_hatched(monster_id: int) -> void:

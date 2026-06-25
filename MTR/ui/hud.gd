@@ -13,6 +13,7 @@ var _icon_cache: Dictionary = {}
 
 func _ready() -> void:
 	GlobalManager.relics_changed.connect(refresh_relics)
+	GlobalManager.talent_upgraded.connect(_refresh_player_vitals)
 	_backpack_button.pressed.connect(_on_backpack_button_pressed)
 	call_deferred("_connect_player")
 	refresh_relics()
@@ -23,11 +24,24 @@ func _connect_player() -> void:
 	if player == null:
 		return
 	if player.has_signal("health_changed"):
-		player.health_changed.connect(update_health)
+		if not player.health_changed.is_connected(update_health):
+			player.health_changed.connect(update_health)
 		update_health(player.current_health, player.max_health)
 	if player.has_signal("armor_changed"):
-		player.armor_changed.connect(update_armor)
+		if not player.armor_changed.is_connected(update_armor):
+			player.armor_changed.connect(update_armor)
 		update_armor(player.current_armor, player.max_armor)
+	if player.has_signal("stats_changed"):
+		if not player.stats_changed.is_connected(_refresh_player_vitals):
+			player.stats_changed.connect(_refresh_player_vitals)
+
+
+func _refresh_player_vitals(_arg: Variant = null) -> void:
+	var player := get_tree().get_first_node_in_group("player")
+	if player == null:
+		return
+	update_health(player.current_health, player.max_health)
+	update_armor(player.current_armor, player.max_armor)
 
 
 func update_health(current_hp: int, max_hp: int) -> void:

@@ -1,0 +1,31 @@
+[gd_scene load_steps=4 format=3 uid="uid://c8talentterminal001"]
+
+[ext_resource type="Script" path="res://talent/talent_terminal.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://c8talentui001" path="res://ui/TalentUI.tscn" id="2_ui"]
+[ext_resource type="Texture2D" path="res://icon.svg" id="3_icon"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_terminal"]
+size = Vector2(72, 72)
+
+[node name="TalentTerminal" type="Area2D"]
+collision_layer = 32
+collision_mask = 4
+script = ExtResource("1_script")
+talent_ui_scene = ExtResource("2_ui")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(0.55, 0.35, 0.85, 1)
+scale = Vector2(0.65, 0.65)
+texture = ExtResource("3_icon")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_terminal")
+
+[node name="HintLabel" type="Label" parent="."]
+offset_left = -80.0
+offset_top = -72.0
+offset_right = 80.0
+offset_bottom = -48.0
+theme_override_font_sizes/font_size = 13
+text = "按 E 升级天赋"
+horizontal_alignment = 1

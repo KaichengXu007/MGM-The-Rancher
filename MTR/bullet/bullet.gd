@@ -6,6 +6,7 @@ extends Area2D
 @export var damage: int = 10
 
 var direction: Vector2 = Vector2.UP
+var knockback_coefficient: float = 0.1
 
 @onready var _screen_notifier: VisibleOnScreenNotifier2D = $VisibleOnScreenNotifier2D
 
@@ -21,7 +22,7 @@ func _physics_process(delta: float) -> void:
 
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("enemy") and body.has_method("take_damage"):
-		body.take_damage(damage)
+		body.take_damage(damage, knockback_coefficient, global_position)
 	queue_free()
 
 

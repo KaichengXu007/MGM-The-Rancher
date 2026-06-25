@@ -4,6 +4,7 @@ extends CharacterBody2D
 
 const MAX_BACKPACK_SLOTS: int = 10
 const DEFAULT_WEAPON_PICKUP_SCENE: PackedScene = preload("res://weapons/WeaponPickup.tscn")
+const BASE_MOVE_SPEED: float = 300.0
 
 @export var move_speed: float = 300.0
 @export var acceleration: float = 0.2
@@ -18,6 +19,7 @@ const DEFAULT_WEAPON_PICKUP_SCENE: PackedScene = preload("res://weapons/WeaponPi
 signal backpack_changed
 signal health_changed(current_hp: int, max_hp: int)
 signal armor_changed(current_armor: int, max_armor: int)
+signal stats_changed
 
 var current_weapon_id: String = "musket"
 var current_weapon_type: GlobalManager.WeaponType = GlobalManager.WeaponType.RANGED
@@ -33,19 +35,23 @@ var _equipped_weapon: Node = null
 
 func _ready() -> void:
 	add_to_group("player")
-	_base_move_speed = move_speed
+	_base_move_speed = BASE_MOVE_SPEED
 	backpack = GlobalManager.run_backpack.duplicate(true)
 	GlobalManager.migrate_backpack_coins(backpack)
 
+	apply_talents(false)
+
 	if _is_in_dungeon():
-		max_health = GlobalManager.run_max_health
-		current_health = GlobalManager.run_current_health
 		max_armor = GlobalManager.run_max_armor
 		current_armor = GlobalManager.run_current_armor
+		current_health = mini(GlobalManager.run_current_health, max_health)
 	else:
 		current_health = max_health
 		max_armor = 0
 		current_armor = 0
+
+	GlobalManager.run_max_health = max_health
+	GlobalManager.run_current_health = current_health
 
 	equip_weapon(
 		GlobalManager.current_weapon_id,
@@ -56,6 +62,48 @@ func _ready() -> void:
 	_sync_backpack()
 	health_changed.emit(current_health, max_health)
 	armor_changed.emit(current_armor, max_armor)
+	stats_changed.emit()
+
+
+func apply_talents(refill_on_ranch: bool = true) -> void:
+	var previous_max := max_health
+	max_health = GlobalManager.get_talent_max_health()
+	move_speed = BASE_MOVE_SPEED * GlobalManager.get_talent_speed_multiplier()
+	_base_move_speed = move_speed
+
+	if not _is_in_dungeon():
+		if refill_on_ranch:
+			current_health = max_health
+	elif max_health > previous_max:
+		current_health += max_health - previous_max
+		current_health = mini(current_health, max_health)
+
+	GlobalManager.run_max_health = max_health
+	if not _is_in_dungeon() and refill_on_ranch:
+		GlobalManager.run_current_health = current_health
+
+	_apply_weapon_damage_bonus()
+	apply_relic_effects()
+	_sync_run_vitals()
+	health_changed.emit(current_health, max_health)
+	stats_changed.emit()
+
+
+func get_display_attack() -> int:
+	if _equipped_weapon != null and "base_damage" in _equipped_weapon:
+		return int(_equipped_weapon.base_damage)
+
+	var base_atk: int = int(GlobalManager.WEAPON_DB.get(current_weapon_id, {}).get("atk", 10))
+	return base_atk + GlobalManager.get_talent_attack_bonus()
+
+
+func get_stats_text() -> Dictionary:
+	return {
+		"health": "%d / %d" % [current_health, max_health],
+		"armor": "%d / %d" % [current_armor, max_armor],
+		"move_speed": str(int(round(move_speed))),
+		"attack": str(get_display_attack()),
+	}
 
 
 func apply_relic_effects() -> void:
@@ -96,7 +144,18 @@ func equip_weapon(
 
 	GlobalManager.set_current_weapon(new_id, new_type)
 
+	_apply_weapon_damage_bonus()
 	apply_relic_effects()
+
+
+func _apply_weapon_damage_bonus() -> void:
+	if _equipped_weapon == null:
+		return
+
+	var base_atk: int = int(GlobalManager.WEAPON_DB.get(current_weapon_id, {}).get("atk", 10))
+	var total_atk: int = base_atk + GlobalManager.get_talent_attack_bonus()
+	if "base_damage" in _equipped_weapon:
+		_equipped_weapon.base_damage = total_atk
 
 
 func get_aim_direction() -> Vector2:
@@ -169,6 +228,7 @@ func _mount_weapon(weapon_id: String) -> void:
 	_equipped_weapon = weapon
 	if weapon.has_method("setup"):
 		weapon.setup(self)
+	_apply_weapon_damage_bonus()
 
 
 func _drop_weapon_pickup(

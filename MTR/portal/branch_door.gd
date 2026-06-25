@@ -84,6 +84,8 @@ func _travel() -> void:
 	if is_run_complete:
 		GlobalManager.clear_run_relics()
 		GlobalManager.reset_ranch_weapon()
+		var player := get_tree().get_first_node_in_group("player")
+		GlobalManager.return_to_ranch_and_save(player)
 		get_tree().call_deferred("change_scene_to_file", "res://ranch.tscn")
 	else:
 		get_tree().call_deferred("reload_current_scene")

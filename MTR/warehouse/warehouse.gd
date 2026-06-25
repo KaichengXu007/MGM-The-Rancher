@@ -41,6 +41,9 @@ func _open_warehouse_ui() -> void:
 		push_warning("Warehouse: warehouse_ui_scene 未设置")
 		return
 
+	var player := get_tree().get_first_node_in_group("player")
+	GlobalManager.deposit_player_items_to_warehouse(player)
+
 	var ui := warehouse_ui_scene.instantiate()
 	get_tree().root.add_child(ui)
 	_ui_open = true

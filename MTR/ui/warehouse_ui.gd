@@ -5,6 +5,7 @@ const WAREHOUSE_SLOT_COUNT: int = 100
 
 const ICON_PATHS: Dictionary = {
 	"egg": "res://icon.svg",
+	"gold": "res://icon.svg",
 	"coin_small": "res://icon.svg",
 	"coin_large": "res://icon.svg",
 }
